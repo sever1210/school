@@ -1,0 +1,74 @@
+<?php
+
+function dmitrii_menu() {
+  $items['content/node'] = array(
+    'title' => 'Content',
+    'page callback' => 'dmitrii',
+    'page arguments' => array('my_test_form'),
+    'access callback' => TRUE,
+  );
+  $items['content/node/status/%'] = array(
+    'title' => 'Switch status',
+    'page callback' => 'dmitrii_switch_status',
+    'page arguments' => array(3),
+    'access callback' => TRUE,
+  );
+  $items['content/node/delete/%'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('dmitrii_confirm',3),
+    'access callback' => TRUE,
+  );
+  return $items;
+
+}
+
+function dmitrii() {
+$header = array(t('Title'), t('Type'), t('Status'), t('Changed'), t('Actions'), t('Author'));
+$query = db_select('node', 'n')
+    ->fields('n', array('nid'))
+    ->execute()
+    ->fetchALL();
+  foreach ($query as $value) {
+    $node = node_load($value->nid);
+    $user = user_load($node->uid);
+    $switch_link=l('Publish/Unpublish','content/node/status/'.$node->nid);
+    $delete_link=l('Delete','content/node/delete/'.$node->nid);
+    $rows[] = array(
+      $node->title,
+      $node->type,
+      ($node->status == 1) ? 'enabled' : 'disabled',
+      $node->changed=date('F j , Y,g:i a'),
+      $switch_link.'     '.$delete_link,
+      $user->name,
+    );
+  }
+  
+  return theme('table', array('header' => $header, 'rows' => $rows));
+}
+
+function dmitrii_switch_status($id){
+$node = node_load($id);
+if($node->status == 1){node_unpublish_action($node); node_save($node);}
+else{node_publish_action($node); node_save($node);}
+drupal_set_message(t('Status has been changed!'));
+drupal_goto('content/node');
+}
+
+function dmitrii_confirm($form, &$form_state, $id){
+$form_state['id'] = $id;
+return confirm_form(
+    $form,  t('Confirm delete?'),
+           'content/node');
+}
+
+function dmitrii_confirm_submit($form, &$form_state){
+  if ($form_state['values']['confirm']) {
+        $id = $form_state['id']; node_delete($id);
+        drupal_set_message('Node has been deleted!');
+        }
+        drupal_goto('content/node');
+}
+
+
+?>
