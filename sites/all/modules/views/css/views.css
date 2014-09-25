@@ -40,3 +40,28 @@
 .view .progress-disabled {
   float: none;
 }
+
+.views-writen{
+  float:left;
+}
+
+.views-aut{
+  float:left;
+}
+
+.views-yea{
+  float:;
+}
+.views-yea:before  { content: "\00a0 ("  }
+
+.views-yea:after  { content: ")"  }
+
+.mytitle{
+  height: 50px;
+  text-align: center;
+}
+
+.mycover{
+  text-align: center;
+
+}
